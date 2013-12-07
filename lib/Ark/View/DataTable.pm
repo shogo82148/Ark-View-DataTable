@@ -28,6 +28,9 @@ has 'responseHandler' => (
 sub process {
     my ($self, $c) = @_;
     my $tqx = { map { split /:/, $_, 2} split /;/, $c->request->param('tqx') };
+    use Data::Dumper;
+    print STDERR Dumper $c->request->param('tqx');
+    print STDERR "\n";
     my $out = $tqx->{out} || 'json';
 
     if($out eq 'json') {
@@ -133,6 +136,12 @@ sub _process_csv {
     }
     close $fh;
     $c->response->content_type('text/csv');
+    use Data::Dumper;
+    print STDERR Dumper $tqx;
+    if(defined $tqx->{outFileName}) {
+        my $filename = $tqx->{outFileName};
+        $c->response->header( 'Content-Disposition' => sprintf 'attachment; filename="%s"', $filename);
+    }
     $c->response->body( $data );
 }
 
@@ -149,15 +158,51 @@ __END__
 
 =head1 NAME
 
-Ark::View::DataTable - It's new $module
+Ark::View::DataTable - Ark View for Data::Google::Visualization::DataTable
 
 =head1 SYNOPSIS
 
+    use Ark 'Controller';
     use Ark::View::DataTable;
+    use Data::Google::Visualization::DataTable;
+    sub gvis :Local {
+        my ($self, $c) = @_;
+
+        # Create new DataTable
+        my $datatable = Data::Google::Visualization::DataTable->new();
+        $datatable->add_columns(
+            { id => 'x',   label => "X", type => 'number' },
+            { id => 'y',   label => "Y", type => 'number' },
+        );
+        $datatable->add_rows(
+            map { [$_, sin(2*3.1415926535*$_/500)] } 1..1000,
+        );
+
+        # Render DataTable using Ark::View::DataTable
+        $c->stash->{table} = $datatable;
+        $c->forward( $c->view( 'DataTable' ) );
+    }
 
 =head1 DESCRIPTION
 
-Ark::View::DataTable is ...
+Ark::View::DataTable is an Ark View for Data::Google::Visualization::DataTable.
+It supports Chart Tools Datasource Protocol (V0.6).
+
+=head1 SEE ALSO
+
+=over 4
+
+=item *
+
+L<Data::Google::Visualization::DataTable|https://metacpan.org/pod/Data::Google::Visualization::DataTable>
+
+=item *
+
+L<Chart Tools Datasource Protocol|https://developers.google.com/chart/interactive/docs/dev/implementing_data_source>
+
+=back
+
+=cut
 
 =head1 LICENSE
 

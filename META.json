@@ -1,5 +1,5 @@
 {
-   "abstract" : "It's new $module",
+   "abstract" : "Ark View for Data::Google::Visualization::DataTable",
    "author" : [
       "@gmail.com>"
    ],
@@ -55,6 +55,17 @@
       }
    },
    "release_status" : "unstable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/shogo82148/Ark-View-DataTable/issues"
+      },
+      "homepage" : "https://github.com/shogo82148/Ark-View-DataTable",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/shogo82148/Ark-View-DataTable.git",
+         "web" : "https://github.com/shogo82148/Ark-View-DataTable"
+      }
+   },
    "version" : "0.01",
    "x_contributors" : [
       "Ichinose Shogo <shogo82148@gmail.com>"
