@@ -104,6 +104,7 @@ sub _process_html {
         $body .= '<tr>';
     }
     $body .= '</table>';
+    $c->response->content_type('text/html');
     $c->response->body( sprintf '<html><body>%s</body></html>', $body);
 }
 
@@ -131,6 +132,7 @@ sub _process_csv {
         print $fh "\n";
     }
     close $fh;
+    $c->response->content_type('text/csv');
     $c->response->body( $data );
 }
 
