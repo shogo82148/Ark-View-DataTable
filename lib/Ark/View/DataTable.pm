@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use Ark 'View';
 use JSON;
+use Text::CSV;
+
 our $VERSION = "0.01";
 
 has json_driver => (
@@ -85,6 +87,25 @@ sub _process_html {
 
 sub _process_csv {
     my ($self, $c, $tqx) = @_;
+    my $table = $c->stash->{table};
+    my $columns = $table->{columns};
+    my $rows    = $table->{rows};
+
+    my $csv = Text::CSV->new ( { binary => 1 } );
+    my $data;
+    open my $fh, '>:encoding(utf8)', \$data or die $!;
+    $csv->print($fh, [map { $_->{label} || $_->{id} } @$columns]);
+    print $fh "\n";
+    for my $row(@$rows) {
+        my $cells = $row->{cells};
+        $csv->print($fh, [map {
+            my $cell = $self->json_driver->decode($_);
+            $cell->{v};
+        } @$cells]);
+        print $fh "\n";
+    }
+    close $fh;
+    $c->response->body( $data );
 }
 
 sub _process_tsv_excel {

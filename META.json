@@ -43,6 +43,8 @@
       },
       "runtime" : {
          "requires" : {
+            "JSON" : "0",
+            "Text::CSV" : "0",
             "perl" : "5.008005"
          }
       },
