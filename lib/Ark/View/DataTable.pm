@@ -57,6 +57,7 @@ sub _process_json {
 
     my $responseHandler = $tqx->{responseHandler} || $self->responseHandler;
     $data = sprintf('%s(%s);', $responseHandler, $data);
+    $c->response->content_type('text/javascript');
     $c->response->body( $data );
 }
 
