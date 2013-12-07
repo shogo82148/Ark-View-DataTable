@@ -5,6 +5,7 @@ use warnings;
 use Ark 'View';
 use JSON;
 use Text::CSV;
+use HTML::Entities;
 
 our $VERSION = "0.01";
 
@@ -83,17 +84,42 @@ sub _render_json {
 
 sub _process_html {
     my ($self, $c, $tqx) = @_;
-}
-
-sub _process_csv {
-    my ($self, $c, $tqx) = @_;
     my $table = $c->stash->{table};
     my $columns = $table->{columns};
     my $rows    = $table->{rows};
 
-    my $csv = Text::CSV->new ( { binary => 1 } );
+    my $body = '<table border="1" cellpadding="2" cellspacing="0"><tr>';
+    for my $column(@$columns) {
+        $body .= sprintf '<th>%s</th>', encode_entities($column->{label} || $column->{id}, q{&<>"'});
+    }
+    $body .= '</tr>';
+
+    for my $row(@$rows) {
+        $body .= '<tr>';
+        my $cells = $row->{cells};
+        for my $cell(@$cells) {
+            my $cl = $self->json_driver->decode($cell);
+            $body .= sprintf '<td>%s</td>', encode_entities($cl->{f} || $cl->{v}, q{&<>"'});
+        }
+        $body .= '<tr>';
+    }
+    $body .= '</table>';
+    $c->response->body( sprintf '<html><body>%s</body></html>', $body);
+}
+
+sub _process_csv {
+    my ($self, $c, $tqx, $sep_char, $encoding) = @_;
+    my $table = $c->stash->{table};
+    my $columns = $table->{columns};
+    my $rows    = $table->{rows};
+
+    my $csv = Text::CSV->new ({
+        binary => 1,
+        sep_char => $sep_char || ',',
+    });
     my $data;
-    open my $fh, '>:encoding(utf8)', \$data or die $!;
+    $encoding ||= 'utf8';
+    open my $fh, ">:encoding($encoding)", \$data or die $!;
     $csv->print($fh, [map { $_->{label} || $_->{id} } @$columns]);
     print $fh "\n";
     for my $row(@$rows) {
@@ -110,6 +136,7 @@ sub _process_csv {
 
 sub _process_tsv_excel {
     my ($self, $c, $tqx) = @_;
+    $self->_process_csv($c, $tqx, "\t", 'UTF-16LE');
 }
 
 __PACKAGE__->meta->make_immutable;;
